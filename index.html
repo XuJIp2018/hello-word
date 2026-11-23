@@ -3,72 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>极简 · 随机背景色</title>
+    <title>我的第一个 Vibe Coding 作品</title>
     <style>
-        /* 全局重置，让页面更干净 */
+        /* ---------- 全局重置 & 基础设置 ---------- */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* 页面背景色由 JavaScript 动态控制，这里只设基础样式 */
         body {
-            min-height: 100vh;               /* 占满整个视口高度 */
-            display: flex;                   /* 弹性布局，让按钮居中 */
-            align-items: center;             /* 垂直居中 */
-            justify-content: center;         /* 水平居中 */
-            background-color: #f0f0f0;       /* 初始浅灰色，JS 会立即替换 */
-            transition: background-color 0.3s ease;  /* 颜色过渡更自然 */
-            font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;          /* 垂直排列：标题在上，按钮和文案在下 */
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;       /* 初始浅灰，JS 会立即替换 */
+            transition: background-color 0.3s ease;
+            font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 20px;                   /* 防止小屏边距太挤 */
         }
 
-        /* 按钮样式 —— 简洁大方 */
+        /* ---------- 大标题样式 ---------- */
+        h1 {
+            font-size: clamp(1.8rem, 8vw, 3.5rem);   /* 响应式字体，手机也好看 */
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #1e2b38;                  /* 深色，与浅背景对比 */
+            text-align: center;
+            margin-bottom: 48px;              /* 标题和下面按钮/文案的距离 */
+            text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.4);
+            /* 加一点有趣的效果：文字轻微投影，有立体感 */
+            transition: color 0.3s ease;
+        }
+
+        /* 为了让标题在随机深色背景下也看得清，给 body 加一个半透明白色背景？不，我们通过 JS 让标题颜色自适应？简单起见：保持标题深色，但背景随机时可能看不清。 
+           其实更好的做法：把标题放在一个半透明白色卡片上？但为了极简风格，我们用 mix-blend-mode 或者让文字在深色背景时自动反白？ 
+           为了更可靠，可以在 JS 里根据背景亮度调整标题颜色？但这样增加复杂度。 
+           新手友好方案：给 h1 加上 text-shadow 白色描边效果，这样即使背景深色也看得清。
+           现在 text-shadow 不够强烈，我们改进一下：使用多重阴影模拟白色描边。
+        */
+        h1 {
+            /* 保留上面样式，覆盖 text-shadow 增强可读性 */
+            text-shadow: 
+                -2px -2px 0 #fff,  
+                 2px -2px 0 #fff,
+                -2px  2px 0 #fff,
+                 2px  2px 0 #fff,
+                 4px  4px 8px rgba(0,0,0,0.2);  /* 轻微阴影增加层次 */
+        }
+
+        /* ---------- 按钮 + 旁边文案的包裹容器 ---------- */
+        .button-wrapper {
+            display: flex;
+            flex-wrap: wrap;                /* 小屏幕时文案可以换行 */
+            align-items: center;
+            justify-content: center;
+            gap: 24px;                      /* 按钮和文案之间的间距 */
+            margin-bottom: 20px;
+        }
+
+        /* ---------- 渐变按钮样式 ---------- */
         .color-btn {
-            padding: 16px 40px;
-            font-size: 1.5rem;
-            font-weight: 500;
+            padding: 18px 48px;
+            font-size: 1.6rem;
+            font-weight: 600;
             color: #ffffff;
-            background-color: #2c3e50;       /* 深蓝灰，有质感 */
+            /* 渐变色背景：从紫到蓝，活泼又现代 */
+            background: linear-gradient(135deg, #8e44ad, #3498db);
+            background-size: 200% 200%;      /* 为悬停动画准备，让渐变可以移动 */
             border: none;
-            border-radius: 60px;              /* 大圆角，更柔和 */
+            border-radius: 60px;
             cursor: pointer;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-            transition: transform 0.1s ease, box-shadow 0.2s ease, background-color 0.2s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
             letter-spacing: 0.5px;
+            transition: 
+                transform 0.15s ease,
+                box-shadow 0.2s ease,
+                background-position 0.3s ease;   /* 控制渐变位置动画 */
+            /* 关键：让渐变背景动起来，悬停时移动位置 */
+            background-position: 0% 50%;
+            /* 让按钮在过渡时颜色更平滑 */
+            will-change: transform, box-shadow, background-position;
         }
 
-        /* 鼠标悬停时轻微上浮 + 阴影加深 */
+        /* 鼠标悬停时的动画：渐变更亮、按钮上浮、阴影增强 */
         .color-btn:hover {
-            background-color: #1e2b38;
-            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
-            transform: scale(1.02);
+            background: linear-gradient(135deg, #9b59b6, #2980b9); /* 稍微亮一点 */
+            background-size: 200% 200%;
+            background-position: 100% 50%;    /* 渐变动画：从左到右扫过 */
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 18px 30px rgba(0, 0, 0, 0.25);
         }
 
-        /* 按下时轻微下沉，反馈感 */
+        /* 按下时轻微下沉，反馈更真实 */
         .color-btn:active {
-            transform: scale(0.98);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            transition-duration: 0.05s;
         }
 
-        /* 可选：聚焦时显示轮廓，方便键盘操作 */
+        /* 键盘聚焦轮廓，方便无障碍操作 */
         .color-btn:focus-visible {
-            outline: 3px solid #3498db;
-            outline-offset: 2px;
+            outline: 3px solid #f1c40f;
+            outline-offset: 3px;
         }
+
+        /* ---------- 鼓励语文案样式 ---------- */
+        .message-box {
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: #1e2b38;
+            background-color: rgba(255, 255, 255, 0.75);  /* 半透明白底，任何背景上都可读 */
+            backdrop-filter: blur(4px);      /* 毛玻璃效果，现代感 */
+            padding: 12px 28px;
+            border-radius: 50px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+            min-width: 180px;                /* 避免太窄，文字显示不舒展 */
+            text-align: center;
+            transition: all 0.2s ease;
+            /* 文字加一点阴影更清晰 */
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+            /* 让文字垂直居中 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 空状态时的占位提示 —— 可以放个默认文案，也可以由 JS 设置 */
+        /* 首次加载时，JS 会立刻给一个随机背景 + 一条随机鼓励语，所以这里不用显示占位符 */
+
+        /* 小屏幕适配：标题和按钮尺寸微调 */
+        @media (max-width: 600px) {
+            h1 {
+                margin-bottom: 32px;
+            }
+            .color-btn {
+                font-size: 1.4rem;
+                padding: 14px 36px;
+            }
+            .message-box {
+                font-size: 1.2rem;
+                padding: 10px 20px;
+                min-width: 140px;
+            }
+            .button-wrapper {
+                gap: 16px;
+            }
+        }
+
+        /* 为了在深色背景上标题和按钮包装更协调，给 button-wrapper 加一点点阴影范围？不用，已经够了 */
     </style>
 </head>
 <body>
-    <button class="color-btn" id="randomColorBtn">点我变色</button>
+    <!-- 大标题 -->
+    <h1>我的第一个 Vibe Coding 作品</h1>
+
+    <!-- 按钮 + 鼓励语文案 的容器 -->
+    <div class="button-wrapper">
+        <button class="color-btn" id="randomColorBtn">点我变色</button>
+        <div class="message-box" id="messageBox">✨ 准备就绪</div>
+    </div>
 
     <script>
         (function() {
-            // 获取按钮元素
+            // 获取元素
             const btn = document.getElementById('randomColorBtn');
+            const messageBox = document.getElementById('messageBox');
 
-            // 生成随机颜色: 返回类似 '#a3f4c2' 的字符串
+            // ---------- 鼓励语库（至少 5 句，这里准备了 8 句）----------
+            const encouragements = [
+                '你真棒！🌟',
+                '今天状态极佳！🔥',
+                '继续加油，未来可期！🚀',
+                '哇，太厉害了！🎉',
+                '每一步都算数，冲冲冲！💪',
+                '保持热爱，奔赴山海！⛰️',
+                '你的进步看得见！📈',
+                '灵感爆棚，运气满分！🍀'
+            ];
+
+            // ---------- 生成随机颜色函数（十六进制）----------
             function getRandomColor() {
-                // 方法1：用十六进制，简单直观
                 const letters = '0123456789ABCDEF';
                 let color = '#';
                 for (let i = 0; i < 6; i++) {
@@ -77,28 +193,36 @@
                 return color;
             }
 
-            // 另一种生成随机颜色的方法 (HSL 模式，色彩更丰富柔和)，但为了代码简单，我们选用上面的 hex 方法。
-            // 如果你想用 HSL，可以取消注释下面这个函数，并在点击事件里替换。
-            /*
-            function getRandomColorHSL() {
-                const h = Math.floor(Math.random() * 360); // 色相 0-360
-                const s = Math.floor(Math.random() * 30) + 60; // 饱和度 60%-90%
-                const l = Math.floor(Math.random() * 30) + 50; // 亮度 50%-80%
-                return `hsl(${h}, ${s}%, ${l}%)`;
+            // ---------- 从数组中随机取一条鼓励语 ----------
+            function getRandomEncouragement() {
+                return encouragements[Math.floor(Math.random() * encouragements.length)];
             }
-            */
 
-            // 点击按钮时改变 body 的背景色
-            btn.addEventListener('click', function() {
-                // 生成随机颜色
-                const newColor = getRandomColor();  // 或者 getRandomColorHSL()
-                // 应用到 body
-                document.body.style.backgroundColor = newColor;
-            });
+            // ---------- 更新页面：随机背景色 + 随机鼓励语 ----------
+            function changeColorAndMessage() {
+                // 1. 随机背景色
+                const newBgColor = getRandomColor();
+                document.body.style.backgroundColor = newBgColor;
 
-            // 可选：页面一加载就随机一个颜色，让人眼前一亮（更活泼）
-            // 如果希望初始就是随机色，取消下面这行注释即可
-            // document.body.style.backgroundColor = getRandomColor();
+                // 2. 随机鼓励语显示到右侧
+                const newMessage = getRandomEncouragement();
+                messageBox.textContent = newMessage;
+
+                // 可选：如果背景色太深，调整标题颜色？为了新手简单，不搞复杂检测。
+                // 但因为标题有白色描边，所以无论深浅都看得清，无需额外处理。
+
+                // 小彩蛋：让消息框轻微弹一下，更有趣（可选）
+                // 使用 CSS 过渡已经够了，不加额外动画保持简洁
+            }
+
+            // ---------- 绑定点击事件 ----------
+            btn.addEventListener('click', changeColorAndMessage);
+
+            // ---------- 页面加载时自动执行一次，让初始状态就有随机颜色和鼓励语 ----------
+            // 这样打开页面就不单调，立即感受到 Vibe
+            changeColorAndMessage();
+
+            // 另外：如果需要键盘按空格也能触发？按钮默认支持回车和空格，所以不用额外处理。
         })();
     </script>
 </body>
