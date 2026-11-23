@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极简 · 随机背景色</title>
+    <style>
+        /* 全局重置，让页面更干净 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 页面背景色由 JavaScript 动态控制，这里只设基础样式 */
+        body {
+            min-height: 100vh;               /* 占满整个视口高度 */
+            display: flex;                   /* 弹性布局，让按钮居中 */
+            align-items: center;             /* 垂直居中 */
+            justify-content: center;         /* 水平居中 */
+            background-color: #f0f0f0;       /* 初始浅灰色，JS 会立即替换 */
+            transition: background-color 0.3s ease;  /* 颜色过渡更自然 */
+            font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* 按钮样式 —— 简洁大方 */
+        .color-btn {
+            padding: 16px 40px;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #ffffff;
+            background-color: #2c3e50;       /* 深蓝灰，有质感 */
+            border: none;
+            border-radius: 60px;              /* 大圆角，更柔和 */
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            transition: transform 0.1s ease, box-shadow 0.2s ease, background-color 0.2s;
+            letter-spacing: 0.5px;
+        }
+
+        /* 鼠标悬停时轻微上浮 + 阴影加深 */
+        .color-btn:hover {
+            background-color: #1e2b38;
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+            transform: scale(1.02);
+        }
+
+        /* 按下时轻微下沉，反馈感 */
+        .color-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 可选：聚焦时显示轮廓，方便键盘操作 */
+        .color-btn:focus-visible {
+            outline: 3px solid #3498db;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <button class="color-btn" id="randomColorBtn">点我变色</button>
+
+    <script>
+        (function() {
+            // 获取按钮元素
+            const btn = document.getElementById('randomColorBtn');
+
+            // 生成随机颜色: 返回类似 '#a3f4c2' 的字符串
+            function getRandomColor() {
+                // 方法1：用十六进制，简单直观
+                const letters = '0123456789ABCDEF';
+                let color = '#';
+                for (let i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                return color;
+            }
+
+            // 另一种生成随机颜色的方法 (HSL 模式，色彩更丰富柔和)，但为了代码简单，我们选用上面的 hex 方法。
+            // 如果你想用 HSL，可以取消注释下面这个函数，并在点击事件里替换。
+            /*
+            function getRandomColorHSL() {
+                const h = Math.floor(Math.random() * 360); // 色相 0-360
+                const s = Math.floor(Math.random() * 30) + 60; // 饱和度 60%-90%
+                const l = Math.floor(Math.random() * 30) + 50; // 亮度 50%-80%
+                return `hsl(${h}, ${s}%, ${l}%)`;
+            }
+            */
+
+            // 点击按钮时改变 body 的背景色
+            btn.addEventListener('click', function() {
+                // 生成随机颜色
+                const newColor = getRandomColor();  // 或者 getRandomColorHSL()
+                // 应用到 body
+                document.body.style.backgroundColor = newColor;
+            });
+
+            // 可选：页面一加载就随机一个颜色，让人眼前一亮（更活泼）
+            // 如果希望初始就是随机色，取消下面这行注释即可
+            // document.body.style.backgroundColor = getRandomColor();
+        })();
+    </script>
+</body>
+</html>
